@@ -2,7 +2,6 @@ name: Pipeline
 on:
   pull_request:
     branches:
-      - dev
       - master
 permissions:
   id-token: write
