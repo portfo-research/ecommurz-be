@@ -2,7 +2,7 @@ package com.github.portforesearch.ecommurzbe;
 
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
-import com.github.portforesearch.ecommurzbe.service.user.UserService;
+import com.github.portforesearch.ecommurzbe.service.AuthService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +18,7 @@ public class EcommurzBeApplication {
 	}
 
 	@Bean
-	CommandLineRunner run(UserService userService){
+	CommandLineRunner run(AuthService userService){
 		return args -> {
 			User user = new User();
 			user.setUsername("fascal");

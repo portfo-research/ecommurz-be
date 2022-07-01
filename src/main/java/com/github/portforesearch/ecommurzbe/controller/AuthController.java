@@ -6,9 +6,10 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.portforesearch.ecommurzbe.exception.MissingTokenException;
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
-import com.github.portforesearch.ecommurzbe.service.user.UserService;
+import com.github.portforesearch.ecommurzbe.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class UserController {
-    private final UserService userService;
+public class AuthController {
+    private final AuthService userService;
 
     @GetMapping("/users")
     public ResponseEntity<Collection<User>> getUsers(){
@@ -76,7 +77,7 @@ public class UserController {
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             }
         } else {
-            throw new RuntimeException("Refresh token is missing");
+            throw new MissingTokenException("Refresh token is missing");
         }
     }
 

@@ -1,4 +1,4 @@
-package com.github.portforesearch.ecommurzbe.service.user;
+package com.github.portforesearch.ecommurzbe.service;
 
 
 import com.github.portforesearch.ecommurzbe.constant.RowStatusConstant;
@@ -22,7 +22,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class AuthServiceImpl implements AuthService, UserDetailsService {
 
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
