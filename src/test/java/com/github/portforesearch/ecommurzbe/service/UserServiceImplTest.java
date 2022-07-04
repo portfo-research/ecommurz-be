@@ -1,5 +1,6 @@
 package com.github.portforesearch.ecommurzbe.service;
 
+import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.UserRepo;
 import org.junit.jupiter.api.Assertions;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +36,8 @@ class UserServiceImplTest {
         user.setUsername("username");
         user.setEmail("email@email.com");
         user.setPassword(password);
+
+        user.setRoles(Collections.singletonList(new Role()));
         return user;
     }
 
