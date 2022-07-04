@@ -11,14 +11,12 @@ import java.util.List;
 @Table(name = "user", schema = "public")
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class User extends Action {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
-    private String name;
     private String username;
     private String email;
     private String password;

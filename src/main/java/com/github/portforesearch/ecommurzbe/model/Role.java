@@ -1,6 +1,5 @@
 package com.github.portforesearch.ecommurzbe.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +14,6 @@ import javax.persistence.Table;
 @Table(name = "role")
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Role extends Action {
     @Id

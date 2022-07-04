@@ -26,7 +26,6 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
 
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -42,45 +41,9 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     }
 
     @Override
-    public User saveUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Date currentDate = new Date();
-        if (Objects.isNull(user.getId())) {
-            user.setCreatedDate(currentDate);
-        }
-        user.setRecordStatusId(RowStatusConstant.ACTIVE);
-        user.setUpdatedDate(currentDate);
-        return userRepo.save(user);
-    }
-
-
-    @Override
-    public Role saveRole(Role role) {
-        Date currentDate = new Date();
-        if (Objects.isNull(role.getId())) {
-            role.setCreatedDate(currentDate);
-        }
-        role.setRecordStatusId(RowStatusConstant.ACTIVE);
-        role.setUpdatedDate(currentDate);
-        return roleRepo.save(role);
-    }
-
-    @Override
     public void addRoleToUser(String username, String roleName) {
         User user = userRepo.findByUsername(username);
         Role role = roleRepo.findByName(roleName);
         user.getRoles().add(role);
     }
-
-    @Override
-    public User getUser(String username) {
-        return userRepo.findByUsername(username);
-    }
-
-    @Override
-    public List<User> getUsers() {
-        return userRepo.findAll();
-    }
-
-
 }

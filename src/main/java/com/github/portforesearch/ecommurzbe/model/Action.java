@@ -9,7 +9,6 @@ import java.util.Date;
 @Getter
 @MappedSuperclass
 @NoArgsConstructor
-@AllArgsConstructor
 public  class Action {
     private String createdBy;
     private Date createdDate;

@@ -43,7 +43,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
         User user = (User) authentication.getPrincipal();
         Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
-        String accessToken = generateToken(request, user, algorithm, 1);
+        String accessToken = generateToken(request, user, algorithm, 60);
 
         HashMap<String, String> tokens = new HashMap<>();
         tokens.put("token", accessToken);
