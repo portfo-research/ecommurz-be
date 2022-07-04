@@ -24,10 +24,7 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-        
-      - name: Generate gradle wrapper
-        run: ./gradlew wrapper
-      
+
       - name: Execute Gradle build
         run: ./gradlew build
       
