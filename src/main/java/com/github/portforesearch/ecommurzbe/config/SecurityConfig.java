@@ -32,9 +32,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManager());
-        customAuthenticationFilter.setFilterProcessesUrl("/api/login");
+        customAuthenticationFilter.setFilterProcessesUrl("/auth/login");
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeHttpRequests().antMatchers("/api/login/**", "/auth/token/refresh/**", "/error/**").permitAll();
+        http.authorizeHttpRequests().antMatchers("/auth/login/**", "/auth/token/refresh/**", "/auth/token/refresh/**"
+                , "/error/**", "auth/register").permitAll();
         http.authorizeHttpRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority(GENERAL_USER, ADMIN, SUPER_ADMIN);
         http.authorizeHttpRequests().antMatchers(POST, "/api/user/save/**").hasAnyAuthority(ADMIN, SUPER_ADMIN);
         http.authorizeHttpRequests().anyRequest().authenticated();

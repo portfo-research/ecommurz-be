@@ -1,6 +1,8 @@
 package com.github.portforesearch.ecommurzbe.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.MappedSuperclass;
 import java.util.Date;
@@ -9,10 +11,10 @@ import java.util.Date;
 @Getter
 @MappedSuperclass
 @NoArgsConstructor
-public  class Action {
+public class Action {
     private String createdBy;
     private Date createdDate;
     private String updatedBy;
     private Date updatedDate;
-    private int recordStatusId;
+    private Integer recordStatusId;
 }

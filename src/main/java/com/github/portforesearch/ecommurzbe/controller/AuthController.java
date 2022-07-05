@@ -6,14 +6,20 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.portforesearch.ecommurzbe.dto.UserRequestDto;
+import com.github.portforesearch.ecommurzbe.dto.UserResponseDto;
+import com.github.portforesearch.ecommurzbe.exception.DuplicateEmailException;
+import com.github.portforesearch.ecommurzbe.exception.DuplicateUserException;
 import com.github.portforesearch.ecommurzbe.exception.MissingTokenException;
+import com.github.portforesearch.ecommurzbe.mapper.UserMapper;
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
+import com.github.portforesearch.ecommurzbe.service.AuthService;
 import com.github.portforesearch.ecommurzbe.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,9 +34,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 @RequiredArgsConstructor
 public class AuthController {
     private final UserService userService;
+    private final AuthService authService;
 
     @GetMapping("token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -48,7 +56,7 @@ public class AuthController {
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             } catch (TokenExpiredException e) {
                 String username = decodedJWT.getSubject();
-                User user = userService.get(username);
+                User user = userService.findByUsername(username);
 
                 String refreshToken = JWT.create()
                         .withSubject(user.getUsername())
@@ -64,6 +72,26 @@ public class AuthController {
         } else {
             throw new MissingTokenException("Refresh token is missing");
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto) {
+        User user = userService.save(UserMapper.INSTANCE.loginRequestDtoToUser(userRequestDto));
+        userRequestDto.getRole().forEach(role -> authService.addRoleToUser(user.getUsername(), role));
+
+        if (userService.findByUsername(user.getUsername()) != null) {
+            throw new DuplicateUserException(String.format("User with username %s already exist", user.getUsername()));
+        }
+        if (userService.findByEmail(user.getEmail()) != null) {
+            throw new DuplicateEmailException(String.format("User with email %s already exist", user.getEmail()));
+        }
+
+        UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setUsername(user.getUsername());
+        userResponseDto.setMessage(String.format("User with username %s has been created with role %s",
+                user.getUsername(), userRequestDto.getRole().toString()));
+
+        return ResponseEntity.ok(userResponseDto);
     }
 
 }

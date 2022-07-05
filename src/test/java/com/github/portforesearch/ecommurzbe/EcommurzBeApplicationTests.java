@@ -1,6 +1,6 @@
 package com.github.portforesearch.ecommurzbe;
 
-import com.github.portforesearch.ecommurzbe.controller.UserController;
+import com.github.portforesearch.ecommurzbe.controller.AuthController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class EcommurzBeApplicationTests {
 
 	@Autowired
-	private UserController userController;
+	private AuthController userController;
 
 	@Test
 	void contextLoads() {

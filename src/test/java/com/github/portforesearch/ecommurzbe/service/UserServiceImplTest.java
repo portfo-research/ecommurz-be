@@ -9,26 +9,22 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 class UserServiceImplTest {
-    @BeforeEach
-    public void setup(){
-        MockitoAnnotations.openMocks(this);
-    }
     @InjectMocks
     UserServiceImpl userService;
-
     @Mock
     UserRepo userRepo;
-
     @Mock
     PasswordEncoder passwordEncoder;
-
     ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     private User generateUser() {
         User user = new User();
@@ -44,7 +40,7 @@ class UserServiceImplTest {
     @Test
     void saveUserWithId() {
         String userId = UUID.randomUUID().toString();
-        User user =  generateUser();
+        User user = generateUser();
         user.setId(userId);
 
         Mockito.when(userRepo.save(Mockito.any(User.class))).thenReturn(user);
@@ -82,18 +78,18 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUser() {
+    void findByUsername() {
         User user = generateUser();
-        Mockito.when(userRepo.findByUsername(Mockito.anyString())).thenReturn(user);
-        User actual = userService.get(user.getUsername());
+        Mockito.when(userRepo.findByUsernameAndRecordStatusId(Mockito.anyString(), Mockito.anyInt())).thenReturn(user);
+        User actual = userService.findByUsername(user.getUsername());
         Assertions.assertNotNull(actual);
     }
 
     @Test
-    void getUsers() {
+    void findByEmail() {
         User user = generateUser();
-        Mockito.when(userRepo.findAll()).thenReturn(Collections.singletonList(user));
-        List<User> actual = userService.getAll();
+        Mockito.when(userRepo.findByEmailAndRecordStatusId(Mockito.anyString(), Mockito.anyInt())).thenReturn(user);
+        User actual = userService.findByEmail(user.getEmail());
         Assertions.assertNotNull(actual);
     }
 }

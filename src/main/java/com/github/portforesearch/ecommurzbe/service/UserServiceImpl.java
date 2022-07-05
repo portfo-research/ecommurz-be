@@ -1,7 +1,6 @@
 package com.github.portforesearch.ecommurzbe.service;
 
 
-import com.github.portforesearch.ecommurzbe.constant.RowStatusConstant;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +10,9 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
+
+import static com.github.portforesearch.ecommurzbe.constant.RowStatusConstant.ACTIVE;
 
 @Service
 @RequiredArgsConstructor
@@ -30,18 +30,18 @@ public class UserServiceImpl implements UserService {
         if (Objects.isNull(user.getId())) {
             user.setCreatedDate(currentDate);
         }
-        user.setRecordStatusId(RowStatusConstant.ACTIVE);
+        user.setRecordStatusId(ACTIVE);
         user.setUpdatedDate(currentDate);
         return userRepo.save(user);
     }
 
     @Override
-    public User get(String username) {
-        return userRepo.findByUsername(username);
+    public User findByUsername(String username) {
+        return userRepo.findByUsernameAndRecordStatusId(username, ACTIVE);
     }
 
     @Override
-    public List<User> getAll() {
-        return userRepo.findAll();
+    public User findByEmail(String email) {
+        return userRepo.findByEmailAndRecordStatusId(email, ACTIVE);
     }
 }

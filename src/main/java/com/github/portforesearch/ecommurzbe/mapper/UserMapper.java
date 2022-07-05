@@ -1,6 +1,7 @@
 package com.github.portforesearch.ecommurzbe.mapper;
 
 import com.github.portforesearch.ecommurzbe.dto.UserRequestDto;
+import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +18,6 @@ public interface UserMapper {
     @Mapping(ignore = true, target = "recordStatusId")
     @Mapping(ignore = true, target = "roles")
     User loginRequestDtoToUser(UserRequestDto loginRequestDto);
+
+
 }

@@ -1,7 +1,6 @@
 package com.github.portforesearch.ecommurzbe.service;
 
 
-import com.github.portforesearch.ecommurzbe.constant.RowStatusConstant;
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.RoleRepo;
@@ -12,11 +11,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static com.github.portforesearch.ecommurzbe.constant.RowStatusConstant.ACTIVE;
 
 @Service
 @RequiredArgsConstructor
@@ -29,21 +30,22 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsername(username);
-        if (Objects.isNull(user)) {
-            throw new UsernameNotFoundException("User not found in database");
-        } else {
+        User user = userRepo.findByUsernameAndRecordStatusId(username, ACTIVE);
+        if (user != null) {
             log.info("User found in the database : {}", username);
+        } else {
+            throw new UsernameNotFoundException("User not found in database");
         }
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+                authorities);
     }
 
     @Override
     public void addRoleToUser(String username, String roleName) {
-        User user = userRepo.findByUsername(username);
-        Role role = roleRepo.findByName(roleName);
+        User user = userRepo.findByUsernameAndRecordStatusId(username, ACTIVE);
+        Role role = roleRepo.findByNameAndRecordStatusId(roleName, ACTIVE);
         user.getRoles().add(role);
     }
 }
