@@ -3,7 +3,10 @@ package com.github.portforesearch.ecommurzbe.controller;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.github.portforesearch.ecommurzbe.exception.MissingTokenException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.github.portforesearch.ecommurzbe.constant.RoleConstant;
+import com.github.portforesearch.ecommurzbe.dto.UserRequestDto;
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.service.AuthService;
@@ -25,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -85,7 +89,8 @@ class AuthControllerTest {
 
         Throwable exception = assertThrows(NestedServletException.class, () -> mockMvc.perform(requestBuilder));
 
-        Assertions.assertEquals(exception.getMessage(), "Request processing failed; nested exception is com.github.portforesearch.ecommurzbe.exception.MissingTokenException: Refresh token is missing");
+        Assertions.assertEquals(exception.getMessage(), "Request processing failed; nested exception is com.github" +
+                ".portforesearch.ecommurzbe.exception.MissingTokenException: Refresh token is missing");
     }
 
     @Test
@@ -105,10 +110,41 @@ class AuthControllerTest {
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .get("/auth/token/refresh")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer "+refreshToken);
+                .header(AUTHORIZATION, "Bearer " + refreshToken);
 
         ResultActions resultActions = mockMvc.perform(requestBuilder);
 
         resultActions.andExpect(MockMvcResultMatchers.jsonPath("$.token", is(refreshToken)));
+    }
+
+    @Test
+    void registerSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("username");
+
+        UserRequestDto userRequestDto = new UserRequestDto();
+        userRequestDto.setUsername("username");
+        userRequestDto.setPassword("password");
+        userRequestDto.setEmail("email@email.com");
+        userRequestDto.setRole(Collections.singletonList(RoleConstant.MANAGER));
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(userRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        Mockito.when(userService.save(Mockito.any(User.class))).thenReturn(user);
+        String message = String.format("User with username %s has been created with role %s",
+                user.getUsername(), userRequestDto.getRole().toString());
+
+        ResultActions resultActions = mockMvc.perform(requestBuilder);
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk());
+        resultActions.andExpect(MockMvcResultMatchers.content().json("{" +
+                "\"username\":"+ userRequestDto.getUsername()+
+                ",\"message\":\""+ message+
+                "\"}"));
     }
 }

@@ -74,7 +74,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
+    @PostMapping("register")
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto) {
         User user = userService.save(UserMapper.INSTANCE.loginRequestDtoToUser(userRequestDto));
         userRequestDto.getRole().forEach(role -> authService.addRoleToUser(user.getUsername(), role));
