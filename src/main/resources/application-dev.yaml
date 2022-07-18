@@ -1,0 +1,14 @@
+spring:
+  profiles: dev
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: create
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driverClassName: org.postgresql.Driver
