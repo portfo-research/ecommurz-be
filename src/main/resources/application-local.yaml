@@ -1,0 +1,24 @@
+spring:
+  profiles: local
+  jpa:
+    properties:
+      hibernate:
+        format: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+#    generate-ddl: true
+#    show-sql: true
+    database: POSTGRESQL
+#    hibernate:
+#      ddl-auto: create
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/ecommurz
+    username: postgres
+    password: postgres
+    driverClassName: org.postgresql.Driver
+log4j:
+  logger:
+    org:
+      hibernate:
+        SQL: debug
+        type: trace
