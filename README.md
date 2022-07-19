@@ -20,4 +20,4 @@ Welcome to ecommurz, ecommurz is a example project of e-commerce
 
 ## Run App
 Run this application using this
-```bootRun --args='--spring.profiles.active=local```
+```gradle bootRun --args='--spring.profiles.active=local'```
