@@ -1,0 +1,12 @@
+log4j:
+  appender:
+    stdout:
+  logger:
+    org:
+      hibernate:
+        SQL: debug
+        type: trace
+logging:
+  level:
+#    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE

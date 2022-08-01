@@ -105,6 +105,7 @@ class AuthControllerTest {
 
     @Test
     void refreshTokenStillValid() throws Exception {
+
         User user = new User();
         user.setUsername(USERNAME);
 
@@ -123,7 +124,6 @@ class AuthControllerTest {
 
         resultActions.andExpect(jsonPath("$.token", is(refreshToken)));
     }
-
     @Test
     void registerSuccess() throws Exception {
         User user = new User();
