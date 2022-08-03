@@ -104,7 +104,7 @@ class UserRoleImplTest {
         user.setRoles(new ArrayList<>());
 
         when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(user);
-        when(roleRepo.findByName(anyString())).thenReturn(role);
+        when(roleRepo.findByName(anyString())).thenReturn(null);
 
         try {
             userRoleService.addRoleToUser(USERNAME, role.getName());

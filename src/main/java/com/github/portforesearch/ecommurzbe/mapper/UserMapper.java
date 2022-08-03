@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 @Mapper
 public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+
     @Mapping(ignore = true, target = "id")
     @Mapping(ignore = true, target = "createdBy")
     @Mapping(ignore = true, target = "createdDate")
@@ -16,7 +17,8 @@ public interface UserMapper {
     @Mapping(ignore = true, target = "updatedDate")
     @Mapping(ignore = true, target = "recordStatusId")
     @Mapping(ignore = true, target = "roles")
-    User loginRequestDtoToUser(UserRequestDto loginRequestDto);
+    @Mapping(ignore = true, target = "sellerId")
+    User loginRequestDtoToUser(UserRequestDto userRequestDto);
 
 
 }

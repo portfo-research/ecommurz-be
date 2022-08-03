@@ -14,7 +14,7 @@ public class Token {
     public static String generate(Algorithm algorithm, String username, List<String> listRole, int minutes, String requestUrl) {
         return JWT.create()
                 .withSubject(username)
-                .withExpiresAt(new Date(System.currentTimeMillis() + minutes * 60 * 1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + (long) minutes * 60 * 1000))
                 .withIssuer(requestUrl)
                 .withClaim("roles", listRole).sign(algorithm);
     }

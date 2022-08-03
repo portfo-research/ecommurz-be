@@ -38,7 +38,7 @@ class RegisterServiceImplTest {
     private RegisterServiceImpl registerService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
     }
 
