@@ -1,6 +1,8 @@
 package com.github.portforesearch.ecommurzbe.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -27,4 +29,6 @@ public class User extends Action {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles = new ArrayList<>();
 
+    @Column(name = "seller_id", insertable = false, updatable = false)
+    private String sellerId;
 }

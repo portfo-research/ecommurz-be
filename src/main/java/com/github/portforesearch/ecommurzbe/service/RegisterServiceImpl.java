@@ -15,7 +15,6 @@ import javax.transaction.Transactional;
 public class RegisterServiceImpl implements RegisterService {
 
     private final UserRoleService authService;
-    private final RoleService roleService;
     private final UserService userService;
 
     @Override

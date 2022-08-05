@@ -15,6 +15,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UserServiceImplTest {
@@ -63,7 +64,7 @@ class UserServiceImplTest {
 
         userService.save(user);
 
-        Mockito.verify(userRepo).save(userCaptor.capture());
+        verify(userRepo).save(userCaptor.capture());
         User userCaptorValue = userCaptor.getValue();
 
         assertNotNull(userCaptorValue.getUpdatedDate());
@@ -83,7 +84,7 @@ class UserServiceImplTest {
 
         userService.save(user);
 
-        Mockito.verify(userRepo).save(userCaptor.capture());
+        verify(userRepo).save(userCaptor.capture());
         User userCaptorValue = userCaptor.getValue();
 
         assertNotNull(userCaptorValue.getUpdatedDate());
