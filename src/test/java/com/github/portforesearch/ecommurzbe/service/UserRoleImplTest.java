@@ -103,13 +103,14 @@ class UserRoleImplTest {
     void addRoleToUserRoleNotFound() {
         User user = generateUser();
         Role role = user.getRoles().get(0);
+        String roleName = role.getName();
         user.setRoles(new ArrayList<>());
 
         when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(user));
         when(roleRepo.findByName(anyString())).thenReturn(Optional.empty());
 
         RoleNotFoundException roleNotFoundException = assertThrows(RoleNotFoundException.class,
-                () -> userRoleService.addRoleToUser(USERNAME, role.getName()));
+                () -> userRoleService.addRoleToUser(USERNAME, roleName));
         assertEquals("Role not found", roleNotFoundException.getMessage());
     }
 }

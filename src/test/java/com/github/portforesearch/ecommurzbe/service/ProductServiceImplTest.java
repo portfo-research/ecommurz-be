@@ -137,10 +137,10 @@ class ProductServiceImplTest {
         when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
 
         //WHEN
-        boolean result = productService.validateAccess(productSellerId);
+        Optional<Boolean> result = productService.validateAccess(productSellerId);
 
         //THEN
-        assertTrue(result);
+        assertTrue(result.get());
     }
 
     @Test

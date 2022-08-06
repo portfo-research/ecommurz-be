@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -38,7 +39,8 @@ public class ProductController {
                                                      @RequestBody ProductRequestDto productRequestDto) {
         Product product = productService.findById(id);
         String sellerId = Objects.requireNonNull(product.getSellerId());
-        if (productService.validateAccess(sellerId)) {
+        Optional<Boolean> validateAccess = productService.validateAccess(sellerId);
+        if (validateAccess.isPresent() && Boolean.TRUE.equals(validateAccess.get())) {
             Product productMapped = ProductMapper.INSTANCE.productRequestDtoToProduct(productRequestDto);
             Product updateProductMapped = ProductMapper.INSTANCE.productToProduct(productMapped, product);
             Product updateProduct = productService.update(updateProductMapped);
@@ -60,7 +62,8 @@ public class ProductController {
     @DeleteMapping("{id}")
     public ResponseEntity<ResponseSuccessDto> delete(@PathVariable String id) {
         Product product = productService.findById(id);
-        if (productService.validateAccess(product.getSellerId())) {
+        Optional<Boolean> validateAccess = productService.validateAccess(product.getSellerId());
+        if (validateAccess.isPresent() && Boolean.TRUE.equals(validateAccess.get())) {
             productService.delete(product);
             return ResponseEntity.ok(getResponseSuccessDto(null, "Product has been deleted"));
         }

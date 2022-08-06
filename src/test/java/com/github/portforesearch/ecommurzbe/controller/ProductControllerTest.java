@@ -23,10 +23,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -47,7 +44,6 @@ class ProductControllerTest {
     public static final double PRICE = 5000.56;
     public static final String IMAGE = "http://image.images.jpg";
     public static final int QUANTITY = 1;
-    private final String USERNAME = "username";
     private final String sellerId = UUID.randomUUID().toString();
     private final String productId = UUID.randomUUID().toString();
 
@@ -85,13 +81,12 @@ class ProductControllerTest {
 
     private String generateToken() {
         User user = new User();
-        user.setUsername(USERNAME);
+        user.setUsername("username");
 
         Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
 
-        String token = Token.generate(algorithm, user.getUsername(),
+        return Token.generate(algorithm, user.getUsername(),
                 user.getRoles().stream().map(Role::getName).collect(Collectors.toList()), 60, "/api/test");
-        return token;
     }
 
     @Test
@@ -123,7 +118,7 @@ class ProductControllerTest {
     void updateProductSuccess() throws Exception {
         Product product = generateProduct();
         when(productService.findById(anyString())).thenReturn(product);
-        when(productService.validateAccess(anyString())).thenReturn(true);
+        when(productService.validateAccess(anyString())).thenReturn(Optional.of(true));
         when(productService.update(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -148,7 +143,7 @@ class ProductControllerTest {
     void updateProduct_whenProductNull_thenThrowAuthorizationServiceException() throws Exception {
         Product product = generateProduct();
         when(productService.findById(anyString())).thenReturn(product);
-        when(productService.validateAccess(anyString())).thenReturn(false);
+        when(productService.validateAccess(anyString())).thenReturn(Optional.of(false));
         when(productService.update(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -195,7 +190,7 @@ class ProductControllerTest {
     void deleteProductSuccess() throws Exception {
         Product product = generateProduct();
         when(productService.findById(anyString())).thenReturn(product);
-        when(productService.validateAccess(anyString())).thenReturn(true);
+        when(productService.validateAccess(anyString())).thenReturn(Optional.of(true));
         doNothing().when(productService).delete(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
