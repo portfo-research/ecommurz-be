@@ -32,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean validateAccess(String productSellerId) {
+    public boolean validateAccess(String productSellerId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return productSellerId.equals(userService.findByUsername(username).get().getSellerId());
     }

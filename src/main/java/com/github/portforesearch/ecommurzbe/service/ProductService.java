@@ -8,7 +8,7 @@ import java.util.Map;
 public interface ProductService {
     Product create(Product product);
 
-    Boolean validateAccess(String productSellerId);
+    boolean validateAccess(String productSellerId);
 
     Product findById(String id);
 
