@@ -21,7 +21,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 class CustomAuthorizationFilterTest {
 
     @Test
-    public void doFilterInternal_withAuthLoginServlet_thenGenerateToken() throws ServletException, IOException {
+    void doFilterInternal_withAuthLoginServlet_thenGenerateToken() throws ServletException, IOException {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
         mockHttpServletRequest.setServletPath("/auth/login");
@@ -38,7 +38,7 @@ class CustomAuthorizationFilterTest {
     }
 
     @Test
-    public void doFilterInternal_withAuthTokenRefreshServlet_thenGenerateToken() throws ServletException,
+     void doFilterInternal_withAuthTokenRefreshServlet_thenGenerateToken() throws ServletException,
             IOException {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
@@ -57,7 +57,7 @@ class CustomAuthorizationFilterTest {
     }
 
     @Test
-    public void doFilterInternal_WhenValidateToken_thenThrowAuthorizationServiceException() throws ServletException,
+     void doFilterInternal_WhenValidateToken_thenThrowAuthorizationServiceException() throws ServletException,
             IOException {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
@@ -68,15 +68,16 @@ class CustomAuthorizationFilterTest {
         MockFilterChain mockFilterChain = new MockFilterChain();
 
         //WHEN
+        CustomAuthorizationFilter customAuthorizationFilter = new CustomAuthorizationFilter();
         AuthorizationServiceException authorizationServiceException = assertThrows(AuthorizationServiceException.class,
-                () -> new CustomAuthorizationFilter().doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
+                () -> customAuthorizationFilter.doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
                         mockFilterChain));
         //THEN
         assertEquals("Invalid bearer format", authorizationServiceException.getMessage());
     }
 
     @Test
-    public void doFilterInternal_WhenValidateToken_thenReturnSuccess() throws IOException {
+     void doFilterInternal_WhenValidateToken_thenReturnSuccess() throws IOException {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
         mockHttpServletRequest.setServletPath("/user/create");

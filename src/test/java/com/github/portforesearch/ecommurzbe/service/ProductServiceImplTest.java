@@ -157,11 +157,12 @@ class ProductServiceImplTest {
     @Test
     void findByIdThrowProductNotFoundException() {
         //GIVEN
+        String id = UUID.randomUUID().toString();
         when(productRepository.findByIdAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.empty());
 
         //WHEN
         ProductNotFoundException productNotFoundException = assertThrows(ProductNotFoundException.class,
-                () -> productService.findById(UUID.randomUUID().toString()));
+                () -> productService.findById(id));
 
         //THEN
         assertEquals("Product not found", productNotFoundException.getMessage());
