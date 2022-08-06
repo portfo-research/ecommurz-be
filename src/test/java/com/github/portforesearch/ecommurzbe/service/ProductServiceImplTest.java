@@ -59,6 +59,7 @@ class ProductServiceImplTest {
 
 
     private Product generateProduct() {
+
         Date date = new Date();
         Product product = new Product();
         product.setName(NAME);
@@ -74,7 +75,6 @@ class ProductServiceImplTest {
 
     @Test
     void createSuccess() {
-        //GIVEN
         Product product = generateProduct();
 
         product.setId(UUID.randomUUID().toString());
@@ -84,10 +84,8 @@ class ProductServiceImplTest {
 
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        //WHEN
         Product createdProduct = productService.create(product);
 
-        //THEN
         verify(productRepository).save(productArgumentCaptor.capture());
         Product productCaptorValue = productArgumentCaptor.getValue();
 
@@ -106,7 +104,6 @@ class ProductServiceImplTest {
 
     @Test
     void updateSuccess() {
-        //GIVEN
         Product product = generateProduct();
         product.setId(ID);
         product.setQuantity(20);
@@ -116,10 +113,8 @@ class ProductServiceImplTest {
 
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        //WHEN
         Product updatedProduct = productService.update(product);
 
-        //THEN
         verify(productRepository).save(productArgumentCaptor.capture());
         Product productCaptorValue = productArgumentCaptor.getValue();
 
@@ -127,60 +122,62 @@ class ProductServiceImplTest {
         assertEquals(20, productCaptorValue.getQuantity());
     }
 
+    @Test
+    void updateThrowProductNotFound() {
+        Product product = generateProduct();
+        product.setId(ID);
+        product.setQuantity(20);
+
+        when(productRepository.findByIdAndRecordStatusId(anyString(),
+                anyInt())).thenReturn(null);
+        try {
+            productService.update(product);
+        } catch (ProductNotFoundException e) {
+            assertEquals("Product not found", e.getMessage());
+        }
+    }
+
 
     @Test
-    void validateAccessSuccess() {
-        //GIVEN
+    void validateAccessSucces() {
         String productSellerId = UUID.randomUUID().toString();
         User user = new User();
         user.setSellerId(productSellerId);
         when(userService.findByUsername(anyString())).thenReturn(user);
 
-        //WHEN
         boolean result = productService.validateAccess(productSellerId);
 
-        //THEN
         assertTrue(result);
     }
 
     @Test
     void findByIdSuccess() {
-        //GIVEN
         when(productRepository.findByIdAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(new Product()));
-        //WHEN
         Product productFound = productService.findById(UUID.randomUUID().toString());
 
-        //THEN
         assertNotNull(productFound);
     }
 
     @Test
     void findByIdThrowProductNotFoundException() {
-        //GIVEN
-        String id = UUID.randomUUID().toString();
         when(productRepository.findByIdAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.empty());
-
-        //WHEN
-        ProductNotFoundException productNotFoundException = assertThrows(ProductNotFoundException.class,
-                () -> productService.findById(id));
-
-        //THEN
-        assertEquals("Product not found", productNotFoundException.getMessage());
+        try {
+            productService.findById(UUID.randomUUID().toString());
+        } catch (ProductNotFoundException e) {
+            assertEquals("Product not found", e.getMessage());
+        }
     }
 
     @Test
     void findAllProductByFilterSuccess() {
-        //GIVEN
         String sellerId = "78603a0e-c636-4fb8-9372-19b8cffe9cec";
         Map<String, String> filter = new HashMap<>();
         filter.put("sellerId", sellerId);
         filter.put("search", "search");
 
         when(productRepository.findAll(any(Specification.class))).thenReturn(Collections.singletonList(new Product()));
-        //WHEN
         List<Product> productList = productService.findAllProductBy(filter);
 
-        //THEN
         assertNotNull(productList);
     }
 }
