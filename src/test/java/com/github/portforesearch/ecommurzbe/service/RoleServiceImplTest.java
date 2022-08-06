@@ -31,17 +31,19 @@ class RoleServiceImplTest {
 
     @Test
     void saveSuccess() {
+        //GIVEN
         Role role = new Role();
         role.setId(UUID.randomUUID().toString());
         role.setName(ROLE_CUSTOMER);
 
         when(roleRepo.save(any(Role.class))).thenReturn(role);
 
+        //WHEN
         roleService.save(role);
 
+        //THEN
         verify(roleRepo).save(roleArgumentCaptor.capture());
         Role roleArgumentCaptorValue = roleArgumentCaptor.getValue();
-
 
         assertEquals(ROLE_CUSTOMER, roleArgumentCaptorValue.getName());
     }
