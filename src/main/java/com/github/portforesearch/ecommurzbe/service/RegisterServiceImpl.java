@@ -20,10 +20,11 @@ public class RegisterServiceImpl implements RegisterService {
     @Override
     @Transactional
     public UserResponseDto register(UserRequestDto userRequestDto, User user) {
-        if (userService.findByUsername(user.getUsername()) != null) {
+
+        if (userService.findByUsername(user.getUsername()).isPresent()) {
             throw new DuplicateUserException(String.format("User with username %s already exist", user.getUsername()));
         }
-        if (userService.findByEmail(user.getEmail()) != null) {
+        if (userService.findByEmail(user.getEmail()).isPresent()) {
             throw new DuplicateEmailException(String.format("User with email %s already exist", user.getEmail()));
         }
 

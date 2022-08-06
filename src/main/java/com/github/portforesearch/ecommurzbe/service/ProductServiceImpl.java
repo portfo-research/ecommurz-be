@@ -3,6 +3,7 @@ package com.github.portforesearch.ecommurzbe.service;
 import com.github.portforesearch.ecommurzbe.constant.RowStatusConstant;
 import com.github.portforesearch.ecommurzbe.exception.ProductNotFoundException;
 import com.github.portforesearch.ecommurzbe.model.Product;
+import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.ProductRepo;
 import com.github.portforesearch.ecommurzbe.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +34,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean validateAccess(String productSellerId) {
+    public Optional<Boolean> validateAccess(String productSellerId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return productSellerId.equals(userService.findByUsername(username).getSellerId());
+        Optional<User> user = userService.findByUsername(username);
+        return user.map(usr -> usr.getSellerId() != null && productSellerId.equals(usr.getSellerId()));
     }
 
     @Override

@@ -31,12 +31,10 @@ public class UserRoleServiceImpl implements UserRoleService, UserDetailsService 
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsernameAndRecordStatusId(username, ACTIVE);
-        if (user != null) {
-            log.info("User found in the database : {}", username);
-        } else {
-            throw new UsernameNotFoundException("User not found in database");
-        }
+        User user =
+                userRepo.findByUsernameAndRecordStatusId(username, ACTIVE)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found in database"));
+
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
@@ -45,11 +43,13 @@ public class UserRoleServiceImpl implements UserRoleService, UserDetailsService 
 
     @Override
     public void addRoleToUser(String username, String roleName) {
-        User user = userRepo.findByUsernameAndRecordStatusId(username, ACTIVE);
-        Role role = roleRepo.findByName(roleName);
-        if (role==null){
-            throw new RoleNotFoundException("Role not found");
-        }
+        User user =
+                userRepo.findByUsernameAndRecordStatusId(username, ACTIVE)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found in database"));
+
+        Role role = roleRepo.findByName(roleName)
+                .orElseThrow(() -> new RoleNotFoundException("Role not found"));
+
         user.getRoles().add(role);
     }
 }

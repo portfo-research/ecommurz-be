@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.github.portforesearch.ecommurzbe.constant.RowStatusConstant.ACTIVE;
 
@@ -36,12 +37,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return userRepo.findByUsernameAndRecordStatusId(username, ACTIVE);
     }
 
     @Override
-    public User findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return userRepo.findByEmailAndRecordStatusId(email, ACTIVE);
     }
 }

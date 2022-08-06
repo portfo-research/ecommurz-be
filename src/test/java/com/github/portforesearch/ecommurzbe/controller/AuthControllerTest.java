@@ -30,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.github.portforesearch.ecommurzbe.constant.RoleConstant.ROLE_CUSTOMER;
@@ -77,7 +78,7 @@ class AuthControllerTest {
 
         User user = new User();
         user.setUsername(USERNAME);
-        when(userService.findByUsername(anyString())).thenReturn(user);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
 
         ResultActions resultActions = mockMvc.perform(requestBuilder);
 
@@ -95,7 +96,7 @@ class AuthControllerTest {
 
         User user = new User();
         user.setUsername(USERNAME);
-        when(userService.findByUsername(anyString())).thenReturn(user);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
 
         Throwable exception = assertThrows(NestedServletException.class, () -> mockMvc.perform(requestBuilder));
 
@@ -124,6 +125,7 @@ class AuthControllerTest {
 
         resultActions.andExpect(jsonPath("$.token", is(refreshToken)));
     }
+
     @Test
     void registerSuccess() throws Exception {
         User user = new User();
@@ -181,7 +183,7 @@ class AuthControllerTest {
                 .content(json);
 
 
-        when(userService.findByUsername(anyString())).thenReturn(user);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(userService.save(any(User.class))).thenReturn(user);
         try {
             mockMvc.perform(requestBuilder);
@@ -214,7 +216,7 @@ class AuthControllerTest {
                 .content(json);
 
 
-        when(userService.findByEmail(anyString())).thenReturn(user);
+        when(userService.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(userService.save(Mockito.any(User.class))).thenReturn(user);
         try {
             mockMvc.perform(requestBuilder);

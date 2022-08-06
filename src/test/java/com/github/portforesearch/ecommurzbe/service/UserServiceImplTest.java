@@ -10,6 +10,7 @@ import org.mockito.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,16 +99,16 @@ class UserServiceImplTest {
     @Test
     void findByUsername() {
         User user = generateUser();
-        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(user);
-        User actual = userService.findByUsername(user.getUsername());
-        assertNotNull(actual);
+        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(user));
+        Optional<User> actual = userService.findByUsername(user.getUsername());
+        assertNotNull(actual.get());
     }
 
     @Test
     void findByEmail() {
         User user = generateUser();
-        when(userRepo.findByEmailAndRecordStatusId(anyString(), anyInt())).thenReturn(user);
-        User actual = userService.findByEmail(user.getEmail());
-        assertNotNull(actual);
+        when(userRepo.findByEmailAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(user));
+        Optional<User> actual = userService.findByEmail(user.getEmail());
+        assertNotNull(actual.get());
     }
 }
