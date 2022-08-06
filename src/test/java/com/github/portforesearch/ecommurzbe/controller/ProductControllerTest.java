@@ -10,11 +10,13 @@ import com.github.portforesearch.ecommurzbe.model.Product;
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.service.ProductService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -157,9 +160,12 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, "Bearer " + generateToken());
 
-        ResultActions resultActions = mockMvc.perform(requestBuilder);
+        AuthorizationServiceException customAuthorizationFilter =
+                Assertions.assertThrows(AuthorizationServiceException.class, () -> mockMvc.perform(requestBuilder));
 
-        resultActions.andExpect(status().is4xxClientError());
+        assertEquals("Request processing failed; nested exception is com.github.portforesearch.ecommurzbe.exception" +
+                ".UnauthorizedSellerException: You don't have access to update product",
+                customAuthorizationFilter.getMessage());
     }
 
     @Test
