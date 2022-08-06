@@ -12,6 +12,7 @@ import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.service.ProductService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -54,8 +53,7 @@ class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+
     @MockBean
     private ProductService productService;
 
@@ -99,7 +97,7 @@ class ProductControllerTest {
     @Test
     void createProductSuccess() throws Exception {
         Product product = generateProduct();
-        when(productService.create(any(Product.class))).thenReturn(product);
+        when(productService.create(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/api/product")
@@ -126,7 +124,7 @@ class ProductControllerTest {
         Product product = generateProduct();
         when(productService.findById(anyString())).thenReturn(product);
         when(productService.validateAccess(anyString())).thenReturn(true);
-        when(productService.update(any(Product.class))).thenReturn(product);
+        when(productService.update(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .put("/api/product/053ce437-fe05-45e5-b59d-f66c0ec7f9f0")
@@ -147,12 +145,11 @@ class ProductControllerTest {
     }
 
     @Test
-    void updateProductThrowWhenProductNull() throws Exception {
-
+    void updateProduct_whenProductNull_thenThrowAuthorizationServiceException() throws Exception {
         Product product = generateProduct();
-        when(productService.findById(anyString())).thenReturn(null);
-        when(productService.validateAccess(anyString())).thenReturn(true);
-        when(productService.update(any(Product.class))).thenReturn(product);
+        when(productService.findById(anyString())).thenReturn(product);
+        when(productService.validateAccess(anyString())).thenReturn(false);
+        when(productService.update(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .put("/api/product/053ce437-fe05-45e5-b59d-f66c0ec7f9f0")
@@ -164,7 +161,7 @@ class ProductControllerTest {
                 Assertions.assertThrows(AuthorizationServiceException.class, () -> mockMvc.perform(requestBuilder));
 
         assertEquals("Request processing failed; nested exception is com.github.portforesearch.ecommurzbe.exception" +
-                ".UnauthorizedSellerException: You don't have access to update product",
+                        ".UnauthorizedSellerException: You don't have access to update product",
                 customAuthorizationFilter.getMessage());
     }
 

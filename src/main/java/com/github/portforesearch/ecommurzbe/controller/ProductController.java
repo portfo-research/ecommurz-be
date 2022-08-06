@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -36,7 +37,8 @@ public class ProductController {
     public ResponseEntity<ResponseSuccessDto> update(@PathVariable String id,
                                                      @RequestBody ProductRequestDto productRequestDto) {
         Product product = productService.findById(id);
-        if (product != null && productService.validateAccess(product.getSellerId())) {
+        String sellerId = Objects.requireNonNull(product.getSellerId());
+        if (productService.validateAccess(sellerId)) {
             Product productMapped = ProductMapper.INSTANCE.productRequestDtoToProduct(productRequestDto);
             Product updateProductMapped = ProductMapper.INSTANCE.productToProduct(productMapped, product);
             Product updateProduct = productService.update(updateProductMapped);
@@ -52,18 +54,17 @@ public class ProductController {
         List<Product> productList = productService.findAllProductBy(filter);
         List<ProductResponseDto> productResponseDtoList =
                 productList.stream().map(ProductMapper.INSTANCE::productToProductResponseDto).collect(Collectors.toList());
-
         return ResponseEntity.ok(getResponseSuccessDto(productResponseDtoList, "Product List"));
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<ResponseSuccessDto> delete(@PathVariable String id){
+    public ResponseEntity<ResponseSuccessDto> delete(@PathVariable String id) {
         Product product = productService.findById(id);
-        if (product != null && productService.validateAccess(product.getSellerId())) {
+        if (productService.validateAccess(product.getSellerId())) {
             productService.delete(product);
             return ResponseEntity.ok(getResponseSuccessDto(null, "Product has been deleted"));
         }
-        throw new ProductNotFoundException("You don't have access to download");
+        throw new ProductNotFoundException("You don't have access to delete");
     }
 
 

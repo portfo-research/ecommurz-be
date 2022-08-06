@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static com.github.portforesearch.ecommurzbe.constant.RoleConstant.ROLE_CUSTOMER;
 import static java.lang.String.format;
@@ -76,7 +77,7 @@ class RegisterServiceImplTest {
         UserRequestDto userRequestDto = new UserRequestDto();
         userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
 
-        when(userService.findByUsername(anyString())).thenReturn(user);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(userService.findByEmail(anyString())).thenReturn(null);
         when(userService.save(any(User.class))).thenReturn(user);
         when(roleService.save(any(Role.class))).thenReturn(new Role());
@@ -101,7 +102,7 @@ class RegisterServiceImplTest {
         userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
 
         when(userService.findByUsername(anyString())).thenReturn(null);
-        when(userService.findByEmail(anyString())).thenReturn(user);
+        when(userService.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(userService.save(any(User.class))).thenReturn(user);
 
         doNothing().when(authService).addRoleToUser(anyString(), anyString());

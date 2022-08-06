@@ -134,7 +134,7 @@ class ProductServiceImplTest {
         String productSellerId = UUID.randomUUID().toString();
         User user = new User();
         user.setSellerId(productSellerId);
-        when(userService.findByUsername(anyString())).thenReturn(user);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
 
         //WHEN
         boolean result = productService.validateAccess(productSellerId);
