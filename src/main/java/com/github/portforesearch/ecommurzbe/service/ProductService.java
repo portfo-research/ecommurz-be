@@ -11,7 +11,7 @@ public interface ProductService {
 
     Optional<Boolean> validateAccess(String productSellerId);
 
-    Product findById(String id);
+    Optional<Product> findById(String id);
 
     Product update(Product product);
 
