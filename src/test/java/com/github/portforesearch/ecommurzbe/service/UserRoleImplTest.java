@@ -17,9 +17,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 
 import static com.github.portforesearch.ecommurzbe.constant.RoleConstant.ROLE_CUSTOMER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -57,7 +59,7 @@ class UserRoleImplTest {
     @Test
     void loadUserByUsernameFound() {
 
-        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(generateUser());
+        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(generateUser()));
         UserDetails actual = userRoleService.loadUserByUsername(USERNAME);
 
         assertEquals(USERNAME, actual.getUsername());
@@ -67,7 +69,7 @@ class UserRoleImplTest {
 
     @Test
     void loadUserByUsernameNotFound() {
-        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(null);
+        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.empty());
         try {
             userRoleService.loadUserByUsername(USERNAME);
         } catch (UsernameNotFoundException e) {
@@ -81,8 +83,8 @@ class UserRoleImplTest {
         Role role = user.getRoles().get(0);
         user.setRoles(new ArrayList<>());
 
-        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(user);
-        when(roleRepo.findByName(anyString())).thenReturn(role);
+        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(user));
+        when(roleRepo.findByName(anyString())).thenReturn(Optional.of(role));
 
         userRoleService.addRoleToUser(USERNAME, role.getName());
 
@@ -101,15 +103,14 @@ class UserRoleImplTest {
     void addRoleToUserRoleNotFound() {
         User user = generateUser();
         Role role = user.getRoles().get(0);
+        String roleName = role.getName();
         user.setRoles(new ArrayList<>());
 
-        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(user);
-        when(roleRepo.findByName(anyString())).thenReturn(null);
+        when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(user));
+        when(roleRepo.findByName(anyString())).thenReturn(Optional.empty());
 
-        try {
-            userRoleService.addRoleToUser(USERNAME, role.getName());
-        } catch (RoleNotFoundException e) {
-            assertEquals("Role not found", e.getMessage());
-        }
+        RoleNotFoundException roleNotFoundException = assertThrows(RoleNotFoundException.class,
+                () -> userRoleService.addRoleToUser(USERNAME, roleName));
+        assertEquals("Role not found", roleNotFoundException.getMessage());
     }
 }

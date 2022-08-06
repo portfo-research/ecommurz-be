@@ -4,11 +4,12 @@ import com.github.portforesearch.ecommurzbe.model.Product;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ProductService {
     Product create(Product product);
 
-    Boolean validateAccess(String productSellerId);
+    Optional<Boolean> validateAccess(String productSellerId);
 
     Product findById(String id);
 

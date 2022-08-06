@@ -10,26 +10,25 @@ import com.github.portforesearch.ecommurzbe.model.Product;
 import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.service.ProductService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -45,14 +44,12 @@ class ProductControllerTest {
     public static final double PRICE = 5000.56;
     public static final String IMAGE = "http://image.images.jpg";
     public static final int QUANTITY = 1;
-    private final String USERNAME = "username";
     private final String sellerId = UUID.randomUUID().toString();
     private final String productId = UUID.randomUUID().toString();
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+
     @MockBean
     private ProductService productService;
 
@@ -84,19 +81,18 @@ class ProductControllerTest {
 
     private String generateToken() {
         User user = new User();
-        user.setUsername(USERNAME);
+        user.setUsername("username");
 
         Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
 
-        String token = Token.generate(algorithm, user.getUsername(),
+        return Token.generate(algorithm, user.getUsername(),
                 user.getRoles().stream().map(Role::getName).collect(Collectors.toList()), 60, "/api/test");
-        return token;
     }
 
     @Test
     void createProductSuccess() throws Exception {
         Product product = generateProduct();
-        when(productService.create(any(Product.class))).thenReturn(product);
+        when(productService.create(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/api/product")
@@ -122,8 +118,8 @@ class ProductControllerTest {
     void updateProductSuccess() throws Exception {
         Product product = generateProduct();
         when(productService.findById(anyString())).thenReturn(product);
-        when(productService.validateAccess(anyString())).thenReturn(true);
-        when(productService.update(any(Product.class))).thenReturn(product);
+        when(productService.validateAccess(anyString())).thenReturn(Optional.of(true));
+        when(productService.update(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .put("/api/product/053ce437-fe05-45e5-b59d-f66c0ec7f9f0")
@@ -144,12 +140,11 @@ class ProductControllerTest {
     }
 
     @Test
-    void updateProductThrowWhenProductNull() throws Exception {
-
+    void updateProduct_whenProductNull_thenThrowAuthorizationServiceException() throws Exception {
         Product product = generateProduct();
-        when(productService.findById(anyString())).thenReturn(null);
-        when(productService.validateAccess(anyString())).thenReturn(true);
-        when(productService.update(any(Product.class))).thenReturn(product);
+        when(productService.findById(anyString())).thenReturn(product);
+        when(productService.validateAccess(anyString())).thenReturn(Optional.of(false));
+        when(productService.update(ArgumentMatchers.any(Product.class))).thenReturn(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
                 .put("/api/product/053ce437-fe05-45e5-b59d-f66c0ec7f9f0")
@@ -157,9 +152,12 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, "Bearer " + generateToken());
 
-        ResultActions resultActions = mockMvc.perform(requestBuilder);
+        AuthorizationServiceException customAuthorizationFilter =
+                Assertions.assertThrows(AuthorizationServiceException.class, () -> mockMvc.perform(requestBuilder));
 
-        resultActions.andExpect(status().is4xxClientError());
+        assertEquals("Request processing failed; nested exception is com.github.portforesearch.ecommurzbe.exception" +
+                        ".UnauthorizedSellerException: You don't have access to update product",
+                customAuthorizationFilter.getMessage());
     }
 
     @Test
@@ -192,7 +190,7 @@ class ProductControllerTest {
     void deleteProductSuccess() throws Exception {
         Product product = generateProduct();
         when(productService.findById(anyString())).thenReturn(product);
-        when(productService.validateAccess(anyString())).thenReturn(true);
+        when(productService.validateAccess(anyString())).thenReturn(Optional.of(true));
         doNothing().when(productService).delete(product);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders

@@ -54,7 +54,9 @@ public class AuthController {
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             } catch (TokenExpiredException e) {
                 String username = decodedJWT.getSubject();
-                User user = userService.findByUsername(username);
+
+                User user = userService.findByUsername(username).orElseThrow(() -> new MissingTokenException("user " +
+                        "not found"));
 
                 String refreshToken = Token.generate(algorithm, user.getUsername(),
                         user.getRoles().stream().map(Role::getName).collect(Collectors.toList()), 60,
