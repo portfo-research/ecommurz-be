@@ -9,6 +9,8 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "user", schema = "public")
 @Setter
@@ -23,6 +25,9 @@ public class User extends Action {
     private String email;
     private String password;
 
+    @Column(name = "customer_id", insertable = false, updatable = false)
+    private String customerId;
+
     @ManyToMany
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -31,4 +36,9 @@ public class User extends Action {
 
     @Column(name = "seller_id", insertable = false, updatable = false)
     private String sellerId;
+
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
 }

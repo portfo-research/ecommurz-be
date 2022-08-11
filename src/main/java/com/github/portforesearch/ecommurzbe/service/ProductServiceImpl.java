@@ -1,7 +1,6 @@
 package com.github.portforesearch.ecommurzbe.service;
 
 import com.github.portforesearch.ecommurzbe.constant.RowStatusConstant;
-import com.github.portforesearch.ecommurzbe.exception.ProductNotFoundException;
 import com.github.portforesearch.ecommurzbe.model.Product;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.ProductRepo;
@@ -25,7 +24,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product create(Product product) {
         product.setCreatedDate(new Date());
-
         product.setCreatedBy(product.getSellerId());
         product.setUpdatedBy(product.getSellerId());
         product.setRecordStatusId(RowStatusConstant.ACTIVE);
@@ -41,11 +39,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product findById(String id) {
+    public Optional<Product> findById(String id) {
         return productRepository.findByIdAndRecordStatusId(id,
-                RowStatusConstant.ACTIVE).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+                RowStatusConstant.ACTIVE);
     }
-
 
     @Override
     public Product update(Product product) {

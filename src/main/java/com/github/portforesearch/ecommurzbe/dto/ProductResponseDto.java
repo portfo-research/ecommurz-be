@@ -12,5 +12,4 @@ public class ProductResponseDto {
     private String image;
     private Double price;
     private Integer quantity;
-    private String sellerId;
 }

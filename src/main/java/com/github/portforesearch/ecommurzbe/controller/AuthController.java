@@ -24,12 +24,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-
+/**
+ * Controller for authentication
+ */
 @RestController
 @RequestMapping("/auth")
 @Slf4j
@@ -38,30 +42,40 @@ public class AuthController {
     private final RegisterService registerService;
     private final UserService userService;
 
+    /**
+     * Use for refreshing token when token expired
+     * @param request
+     * @param response
+     * @throws IOException
+     */
     @GetMapping("token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorizationHeader = request.getHeader(AUTHORIZATION);
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String oldToken = authorizationHeader.substring("Bearer ".length());
+        String authorizationHeader = Objects.requireNonNull(request.getHeader(AUTHORIZATION), "Request is invalid");
+        String requestUrl = Objects.requireNonNull(request.getRequestURL()).toString();
+        if (authorizationHeader.startsWith("Bearer ")) {
             Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
             JWTVerifier verifier = JWT.require(algorithm).build();
-            DecodedJWT decodedJWT = JWT.decode(oldToken);
+            String oldToken = authorizationHeader.substring("Bearer ".length());
+            HashMap<String, String> tokens = new HashMap<>();
+
             try {
                 verifier.verify(oldToken);
-                HashMap<String, String> tokens = new HashMap<>();
                 tokens.put("token", oldToken);
+
                 response.setContentType(APPLICATION_JSON_VALUE);
+                //Reuse old token when token still valid
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             } catch (TokenExpiredException e) {
+                DecodedJWT decodedJWT = JWT.decode(oldToken);
                 String username = decodedJWT.getSubject();
 
-                User user = userService.findByUsername(username).orElseThrow(() -> new MissingTokenException("user " +
+                User user = userService.findByUsername(username).orElseThrow(() -> new MissingTokenException("User " +
                         "not found"));
 
-                String refreshToken = Token.generate(algorithm, user.getUsername(),
-                        user.getRoles().stream().map(Role::getName).collect(Collectors.toList()), 60,
-                        request.getRequestURL().toString());
-                HashMap<String, String> tokens = new HashMap<>();
+                List<String> listRole = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+                //Generate new Token
+                String refreshToken = Token.generate(algorithm, user.getUsername(), listRole, 60, requestUrl);
+
                 tokens.put("token", refreshToken);
                 response.setContentType(APPLICATION_JSON_VALUE);
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
@@ -71,6 +85,11 @@ public class AuthController {
         }
     }
 
+    /**
+     * use for register new member
+     * @param userRequestDto
+     * @return
+     */
     @PostMapping("register")
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto) {
         User user = UserMapper.INSTANCE.loginRequestDtoToUser(userRequestDto);

@@ -5,7 +5,6 @@ import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.RoleRepo;
 import com.github.portforesearch.ecommurzbe.repo.UserRepo;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,8 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static com.github.portforesearch.ecommurzbe.constant.RoleConstant.ROLE_CUSTOMER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -64,17 +62,16 @@ class UserRoleImplTest {
 
         assertEquals(USERNAME, actual.getUsername());
         assertEquals(PASSWORD, actual.getPassword());
-        Assertions.assertNotNull(actual.getAuthorities());
+        assertNotNull(actual.getAuthorities());
     }
 
     @Test
     void loadUserByUsernameNotFound() {
         when(userRepo.findByUsernameAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.empty());
-        try {
-            userRoleService.loadUserByUsername(USERNAME);
-        } catch (UsernameNotFoundException e) {
-            assertEquals("User not found in database", e.getMessage());
-        }
+        UsernameNotFoundException usernameNotFoundException = assertThrows(UsernameNotFoundException.class,
+                () -> userRoleService.loadUserByUsername(USERNAME));
+
+        assertEquals("User not found in database", usernameNotFoundException.getMessage());
     }
 
     @Test

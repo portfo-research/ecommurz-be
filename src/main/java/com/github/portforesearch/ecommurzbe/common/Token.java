@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Generate token
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Token {
 
