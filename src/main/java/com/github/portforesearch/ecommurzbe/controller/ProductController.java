@@ -1,5 +1,6 @@
 package com.github.portforesearch.ecommurzbe.controller;
 
+import com.github.portforesearch.ecommurzbe.common.Response;
 import com.github.portforesearch.ecommurzbe.dto.ProductRequestDto;
 import com.github.portforesearch.ecommurzbe.dto.ProductResponseDto;
 import com.github.portforesearch.ecommurzbe.dto.ResponseSuccessDto;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,25 +30,25 @@ public class ProductController {
         Product savedProduct = productService.create(product);
 
         ProductResponseDto productResponseDto = ProductMapper.INSTANCE.productToProductResponseDto(savedProduct);
-        productResponseDto.setSellerId(product.getSellerId());
-        return ResponseEntity.ok(getResponseSuccessDto(productResponseDto, "Product has been created"));
+        return ResponseEntity.ok(Response.getResponseSuccessDto(productResponseDto, "Product has been" +
+                " created"));
     }
 
     @PutMapping("{id}")
     public ResponseEntity<ResponseSuccessDto> update(@PathVariable String id,
                                                      @RequestBody ProductRequestDto productRequestDto) {
-        Product product = productService.findById(id);
-        String sellerId = Objects.requireNonNull(product.getSellerId());
-        Optional<Boolean> validateAccess = productService.validateAccess(sellerId);
-        if (validateAccess.isPresent() && Boolean.TRUE.equals(validateAccess.get())) {
-            Product productMapped = ProductMapper.INSTANCE.productRequestDtoToProduct(productRequestDto);
-            Product updateProductMapped = ProductMapper.INSTANCE.productToProduct(productMapped, product);
-            Product updateProduct = productService.update(updateProductMapped);
-            ProductResponseDto productResponseDto =
-                    ProductMapper.INSTANCE.productToProductResponseDto(updateProduct);
-            return ResponseEntity.ok(getResponseSuccessDto(productResponseDto, "Product has been updated"));
-        }
-        throw new UnauthorizedSellerException("You don't have access to update product");
+        ProductResponseDto productResponseDto = productService.findById(id).map(product -> {
+            String sellerId = Objects.requireNonNull(product.getSellerId(), "Product doesn't have seller");
+            return productService.validateAccess(sellerId).filter(Boolean::booleanValue).map(bool -> {
+                Product productMapped = ProductMapper.INSTANCE.productRequestDtoToProduct(productRequestDto);
+                Product updateProductMapped = ProductMapper.INSTANCE.productToProduct(productMapped, product);
+                Product updateProduct = productService.update(updateProductMapped);
+                return ProductMapper.INSTANCE.productToProductResponseDto(updateProduct);
+            }).orElseThrow(() -> new UnauthorizedSellerException("You don't have access to update product"));
+        }).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        return ResponseEntity.ok(Response.getResponseSuccessDto(productResponseDto, "Product has " +
+                "been updated"));
     }
 
     @GetMapping
@@ -56,27 +56,20 @@ public class ProductController {
         List<Product> productList = productService.findAllProductBy(filter);
         List<ProductResponseDto> productResponseDtoList =
                 productList.stream().map(ProductMapper.INSTANCE::productToProductResponseDto).collect(Collectors.toList());
-        return ResponseEntity.ok(getResponseSuccessDto(productResponseDtoList, "Product List"));
+        return ResponseEntity.ok(Response.getResponseSuccessDto(productResponseDtoList, "Product " +
+                "List"));
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<ResponseSuccessDto> delete(@PathVariable String id) {
-        Product product = productService.findById(id);
-        Optional<Boolean> validateAccess = productService.validateAccess(product.getSellerId());
-        if (validateAccess.isPresent() && Boolean.TRUE.equals(validateAccess.get())) {
-            productService.delete(product);
-            return ResponseEntity.ok(getResponseSuccessDto(null, "Product has been deleted"));
-        }
-        throw new ProductNotFoundException("You don't have access to delete");
+        String message = productService.findById(id).map(product -> {
+                    String sellerId = Objects.requireNonNull(product.getSellerId());
+                    String deleteProductMessage = "Product has been deleted";
+                    return productService.validateAccess(sellerId).filter(Boolean::booleanValue).map(bool ->
+                            deleteProductMessage);
+                }).orElseThrow(() -> new UnauthorizedSellerException("You don't have access to update product"))
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        return ResponseEntity.ok(Response.getResponseSuccessDto(null, message));
     }
-
-
-    private ResponseSuccessDto getResponseSuccessDto(Object data, String message) {
-        ResponseSuccessDto responseSuccessDto = new ResponseSuccessDto();
-        responseSuccessDto.setMessage(message);
-        responseSuccessDto.setStatusCode(200);
-        responseSuccessDto.setData(data);
-        return responseSuccessDto;
-    }
-
 }

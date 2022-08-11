@@ -14,7 +14,6 @@ import com.github.portforesearch.ecommurzbe.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -98,7 +97,8 @@ class AuthControllerTest {
         user.setUsername(USERNAME);
         when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
 
-        Throwable exception = assertThrows(NestedServletException.class, () -> mockMvc.perform(requestBuilder));
+        NestedServletException exception = assertThrows(NestedServletException.class,
+                () -> mockMvc.perform(requestBuilder));
 
         Assertions.assertEquals(exception.getMessage(), "Request processing failed; nested exception is com.github" +
                 ".portforesearch.ecommurzbe.exception.MissingTokenException: Refresh token is missing");
@@ -127,7 +127,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerSuccess() throws Exception {
+    void register_thenReturnSuccess() throws Exception {
         User user = new User();
         user.setUsername(USERNAME);
 
@@ -161,69 +161,5 @@ class AuthControllerTest {
                 "\"username\":" + userRequestDto.getUsername() +
                 ",\"message\":\"" + message +
                 "\"}"));
-    }
-
-    @Test
-    void registerDuplicateUsername() throws Exception {
-        User user = new User();
-        user.setUsername(USERNAME);
-
-        UserRequestDto userRequestDto = new UserRequestDto();
-        userRequestDto.setUsername(USERNAME);
-        userRequestDto.setPassword(PASSWORD);
-        userRequestDto.setEmail(EMAIL);
-        userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
-
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(userRequestDto);
-
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
-                .post("/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json);
-
-
-        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.save(any(User.class))).thenReturn(user);
-        try {
-            mockMvc.perform(requestBuilder);
-        } catch (NestedServletException e) {
-            Assertions.assertEquals(e.getMessage(), String.format("Request processing failed; nested exception is com" +
-                    ".github.portforesearch.ecommurzbe.exception.DuplicateUserException: User with username %s " +
-                    "already exist", user.getUsername()));
-        }
-    }
-
-    @Test
-    void registerDuplicateEmail() throws Exception {
-        User user = new User();
-        user.setUsername(USERNAME);
-        user.setPassword(PASSWORD);
-        user.setEmail(EMAIL);
-
-        UserRequestDto userRequestDto = new UserRequestDto();
-        userRequestDto.setUsername(USERNAME);
-        userRequestDto.setPassword(PASSWORD);
-        userRequestDto.setEmail(EMAIL);
-        userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
-
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(userRequestDto);
-
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
-                .post("/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json);
-
-
-        when(userService.findByEmail(anyString())).thenReturn(Optional.of(user));
-        when(userService.save(Mockito.any(User.class))).thenReturn(user);
-        try {
-            mockMvc.perform(requestBuilder);
-        } catch (NestedServletException e) {
-            Assertions.assertEquals(e.getMessage(), String.format("Request processing failed; nested exception is com" +
-                    ".github.portforesearch.ecommurzbe.exception.DuplicateEmailException: User with email %s already " +
-                    "exist", user.getEmail()));
-        }
     }
 }

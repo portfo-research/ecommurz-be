@@ -26,12 +26,15 @@ public class ProductSpecification {
 
                 Predicate predicate = criteriaBuilder.equal(product.get("recordStatusId"), RowStatusConstant.ACTIVE);
 
-                Object sellerId = filter.get("sellerId");
+                //Filter by seller Id
+                String sellerIdKey = "sellerId";
+                Object sellerId = filter.get(sellerIdKey);
                 if (sellerId != null) {
                     predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(product.get("sellerId"),
                             sellerId.toString()));
                 }
 
+                //Filter by product and description
                 Object search = filter.get("search");
                 if (search != null) {
                     predicate = criteriaBuilder.and(predicate, search(product, criteriaBuilder,
@@ -44,6 +47,13 @@ public class ProductSpecification {
 
     }
 
+    /**
+     * Filter by product name and description
+     * @param product
+     * @param criteriaBuilder
+     * @param text
+     * @return
+     */
     private static Predicate search(Root<Product> product, CriteriaBuilder criteriaBuilder, String text) {
 
         return criteriaBuilder.or(
@@ -53,7 +63,6 @@ public class ProductSpecification {
                 criteriaBuilder.like(
                         criteriaBuilder.lower(product.get("description")), "%" + text.toLowerCase() + "%"
                 ));
-
     }
 
 

@@ -18,6 +18,8 @@ public interface UserMapper {
     @Mapping(ignore = true, target = "recordStatusId")
     @Mapping(ignore = true, target = "roles")
     @Mapping(ignore = true, target = "sellerId")
+    @Mapping(ignore = true, target = "customerId")
+    @Mapping(ignore = true, target = "customer")
     User loginRequestDtoToUser(UserRequestDto userRequestDto);
 
 

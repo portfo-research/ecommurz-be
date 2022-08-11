@@ -2,7 +2,6 @@ package com.github.portforesearch.ecommurzbe.service;
 
 
 import com.github.portforesearch.ecommurzbe.constant.RowStatusConstant;
-import com.github.portforesearch.ecommurzbe.exception.ProductNotFoundException;
 import com.github.portforesearch.ecommurzbe.model.Product;
 import com.github.portforesearch.ecommurzbe.model.User;
 import com.github.portforesearch.ecommurzbe.repo.ProductRepo;
@@ -73,7 +72,7 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void createSuccess() {
+    void create_thenReturnSuccess() {
         //GIVEN
         Product product = generateProduct();
 
@@ -105,7 +104,7 @@ class ProductServiceImplTest {
 
 
     @Test
-    void updateSuccess() {
+    void update_thenReturnSuccess() {
         //GIVEN
         Product product = generateProduct();
         product.setId(ID);
@@ -129,7 +128,7 @@ class ProductServiceImplTest {
 
 
     @Test
-    void validateAccessSuccess() {
+    void validateAccess_thenReturnSuccess() {
         //GIVEN
         String productSellerId = UUID.randomUUID().toString();
         User user = new User();
@@ -144,32 +143,18 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void findByIdSuccess() {
+    void findById_thenReturnSuccess() {
         //GIVEN
         when(productRepository.findByIdAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.of(new Product()));
         //WHEN
-        Product productFound = productService.findById(UUID.randomUUID().toString());
+        Optional<Product> productFound = productService.findById(UUID.randomUUID().toString());
 
         //THEN
-        assertNotNull(productFound);
+        assertTrue(productFound.isPresent());
     }
 
     @Test
-    void findByIdThrowProductNotFoundException() {
-        //GIVEN
-        String id = UUID.randomUUID().toString();
-        when(productRepository.findByIdAndRecordStatusId(anyString(), anyInt())).thenReturn(Optional.empty());
-
-        //WHEN
-        ProductNotFoundException productNotFoundException = assertThrows(ProductNotFoundException.class,
-                () -> productService.findById(id));
-
-        //THEN
-        assertEquals("Product not found", productNotFoundException.getMessage());
-    }
-
-    @Test
-    void findAllProductByFilterSuccess() {
+    void findAllProductByFilter_thenReturnSuccess() {
         //GIVEN
         String sellerId = "78603a0e-c636-4fb8-9372-19b8cffe9cec";
         Map<String, String> filter = new HashMap<>();
@@ -182,5 +167,20 @@ class ProductServiceImplTest {
 
         //THEN
         assertNotNull(productList);
+    }
+
+    @Test
+    void delete_thenReturnSuccess() {
+        //GIVEN
+        Product product = new Product();
+        when(productRepository.save(any())).thenReturn(product);
+
+        //WHEN
+        productService.delete(product);
+
+        //THEN
+        verify(productRepository).save(productArgumentCaptor.capture());
+        Product productValue = productArgumentCaptor.getValue();
+        assertEquals(RowStatusConstant.DELETED, productValue.getRecordStatusId());
     }
 }

@@ -4,7 +4,6 @@ import com.github.portforesearch.ecommurzbe.dto.UserRequestDto;
 import com.github.portforesearch.ecommurzbe.dto.UserResponseDto;
 import com.github.portforesearch.ecommurzbe.exception.DuplicateEmailException;
 import com.github.portforesearch.ecommurzbe.exception.DuplicateUserException;
-import com.github.portforesearch.ecommurzbe.model.Role;
 import com.github.portforesearch.ecommurzbe.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,9 +30,6 @@ class RegisterServiceImplTest {
     UserService userService;
 
     @Mock
-    RoleService roleService;
-
-    @Mock
     UserRoleService authService;
 
     @InjectMocks
@@ -45,14 +41,14 @@ class RegisterServiceImplTest {
     }
 
     @Test
-    void registerSuccess() {
+    void register_thenReturnSuccess() {
         //GIVEN
-        User user = new User();
+        User user = getUser();
         UserRequestDto userRequestDto = new UserRequestDto();
         userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
 
-        when(userService.findByUsername(anyString())).thenReturn(null);
-        when(userService.findByEmail(anyString())).thenReturn(null);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(userService.findByEmail(anyString())).thenReturn(Optional.empty());
         when(userService.save(any(User.class))).thenReturn(user);
 
         doNothing().when(authService).addRoleToUser(anyString(), anyString());
@@ -69,18 +65,23 @@ class RegisterServiceImplTest {
 
     }
 
-    @Test
-    void registerThrowDuplicateUserException() {
-        //GIVEN
+    private User getUser() {
         User user = new User();
         user.setUsername("username");
+        user.setPassword("password");
+        user.setEmail("email");
+        return user;
+    }
+
+    @Test
+    void register_whenDuplicateUser_thenThrowDuplicateUserException() {
+        //GIVEN
+        User user = getUser();
         UserRequestDto userRequestDto = new UserRequestDto();
         userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
 
+        //Set exist user when findByUsername then throw DuplicateUserException
         when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.findByEmail(anyString())).thenReturn(null);
-        when(userService.save(any(User.class))).thenReturn(user);
-        when(roleService.save(any(Role.class))).thenReturn(new Role());
 
         doNothing().when(authService).addRoleToUser(anyString(), anyString());
 
@@ -94,16 +95,16 @@ class RegisterServiceImplTest {
     }
 
     @Test
-    void registerThrowDuplicateEmailException() {
+    void register_whenDuplicateEmail_thenThrowDuplicateEmailException() {
         //GIVEN
-        User user = new User();
-        user.setEmail("email@email.com");
+        User user = getUser();
         UserRequestDto userRequestDto = new UserRequestDto();
         userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
 
-        when(userService.findByUsername(anyString())).thenReturn(null);
+
+        when(userService.findByUsername(anyString())).thenReturn(Optional.empty());
+        //Set exist user when findByEmail then throw DuplicateEmailException
         when(userService.findByEmail(anyString())).thenReturn(Optional.of(user));
-        when(userService.save(any(User.class))).thenReturn(user);
 
         doNothing().when(authService).addRoleToUser(anyString(), anyString());
 

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -21,12 +22,16 @@ public class RegisterServiceImpl implements RegisterService {
     @Transactional
     public UserResponseDto register(UserRequestDto userRequestDto, User user) {
 
-        if (userService.findByUsername(user.getUsername()).isPresent()) {
-            throw new DuplicateUserException(String.format("User with username %s already exist", user.getUsername()));
-        }
-        if (userService.findByEmail(user.getEmail()).isPresent()) {
-            throw new DuplicateEmailException(String.format("User with email %s already exist", user.getEmail()));
-        }
+        String username = Objects.requireNonNull(user.getUsername());
+        String email = Objects.requireNonNull(user.getEmail());
+
+        userService.findByUsername(user.getUsername()).ifPresent(usr -> {
+            throw new DuplicateUserException(String.format("User with username %s already exist", username));
+        });
+
+        userService.findByEmail(user.getEmail()).ifPresent(eml -> {
+            throw new DuplicateEmailException(String.format("User with email %s already exist", email));
+        });
 
         userService.save(user);
 

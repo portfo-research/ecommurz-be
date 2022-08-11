@@ -5,11 +5,10 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class ProductResponseDto {
+public class CartResponseDto {
     private String id;
-    private String name;
-    private String description;
-    private String image;
-    private Double price;
     private Integer quantity;
+    private Double itemAmount;
+    private Double totalAmount;
+    private ProductResponseDto product;
 }

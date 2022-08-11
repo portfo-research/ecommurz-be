@@ -11,15 +11,18 @@ import javax.persistence.*;
 @Entity
 public class Product extends Action {
     @Id
-    @GeneratedValue(generator = "uuid2", strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "uuid2")
+    @Column(nullable = false)
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     private String name;
     private String description;
     private String image;
     private Double price;
+    @Column(nullable = false)
     private int quantity;
 
     @Column(name = "seller_id")
     private String sellerId;
+
 }
