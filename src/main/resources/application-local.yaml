@@ -22,3 +22,6 @@ log4j:
       hibernate:
         SQL: debug
         type: trace
+jwt:
+  secret:
+    key: secretKey
