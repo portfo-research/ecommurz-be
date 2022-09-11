@@ -5,12 +5,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.portforesearch.ecommurzbe.module.auth.generator.TokenGenerator;
-import com.github.portforesearch.ecommurzbe.module.product.dto.ProductRequest;
 import com.github.portforesearch.ecommurzbe.module.product.controller.ProductController;
+import com.github.portforesearch.ecommurzbe.module.product.dto.ProductRequest;
 import com.github.portforesearch.ecommurzbe.module.product.model.Product;
+import com.github.portforesearch.ecommurzbe.module.product.service.ProductService;
 import com.github.portforesearch.ecommurzbe.module.role.model.Role;
 import com.github.portforesearch.ecommurzbe.module.user.model.User;
-import com.github.portforesearch.ecommurzbe.module.product.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -47,7 +46,7 @@ class ProductControllerTest {
     public static final String IMAGE = "http://image.images.jpg";
     public static final int QUANTITY = 1;
     public static final String EXCEPTION = "Request processing failed; nested exception is com.github.portforesearch" +
-            ".ecommurzbe.exception";
+            ".ecommurzbe.module.auth.exception";
     private final String sellerId = UUID.randomUUID().toString();
     private final String productId = UUID.randomUUID().toString();
 
@@ -178,9 +177,8 @@ class ProductControllerTest {
         NestedServletException nullPointerException = assertThrows(NestedServletException.class,
                 () -> mockMvc.perform(requestBuilder));
 
-        assertEquals(EXCEPTION +
-                        ".UnauthorizedSellerException: You don't have access to update product",
-                nullPointerException.getMessage());
+        assertTrue(nullPointerException.getMessage().contains("UnauthorizedSellerException: You don't have access to " +
+                "update product"));
     }
 
     @Test
@@ -197,8 +195,7 @@ class ProductControllerTest {
         NestedServletException nullPointerException = assertThrows(NestedServletException.class,
                 () -> mockMvc.perform(requestBuilder));
 
-        assertEquals(EXCEPTION + ".ProductNotFoundException: Product not found",
-                nullPointerException.getMessage());
+        assertTrue(nullPointerException.getMessage().contains("ProductNotFoundException: Product not found"));
     }
 
     @Test
@@ -217,9 +214,8 @@ class ProductControllerTest {
         NestedServletException customAuthorizationFilter =
                 assertThrows(NestedServletException.class, () -> mockMvc.perform(requestBuilder));
 
-        assertEquals(EXCEPTION +
-                        ".UnauthorizedSellerException: You don't have access to update product",
-                customAuthorizationFilter.getMessage());
+        assertTrue(customAuthorizationFilter.getMessage().contains("UnauthorizedSellerException: You don't have " +
+                "access to update product"));
     }
 
     @Test

@@ -100,9 +100,8 @@ class AuthControllerTest {
         NestedServletException exception = assertThrows(NestedServletException.class,
                 () -> mockMvc.perform(requestBuilder));
 
-        Assertions.assertEquals(exception.getMessage(), "Request processing failed; nested exception is com.github" +
-                ".portforesearch.ecommurzbe.exception.MissingTokenException: Refresh token is missing");
-    }
+        Assertions.assertTrue(exception.getMessage().contains("Refresh token is missing"));
+      }
 
     @Test
     void refreshTokenStillValid() throws Exception {
