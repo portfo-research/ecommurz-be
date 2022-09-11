@@ -1,7 +1,8 @@
 package com.github.portforesearch.ecommurzbe.repo;
 
-import com.github.portforesearch.ecommurzbe.model.Product;
-import com.github.portforesearch.ecommurzbe.specification.ProductSpecification;
+import com.github.portforesearch.ecommurzbe.module.product.model.Product;
+import com.github.portforesearch.ecommurzbe.module.product.repo.ProductRepo;
+import com.github.portforesearch.ecommurzbe.module.product.specification.ProductSpecification;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
