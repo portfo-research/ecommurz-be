@@ -17,6 +17,7 @@ import com.github.portforesearch.ecommurzbe.service.RegisterService;
 import com.github.portforesearch.ecommurzbe.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class AuthController {
     private final RegisterService registerService;
     private final UserService userService;
+    @Value("${jwt.secret.key}")
+    private String jwtSecretKey;
 
     /**
      * Use for refreshing token when token expired
@@ -53,7 +56,7 @@ public class AuthController {
         String authorizationHeader = Objects.requireNonNull(request.getHeader(AUTHORIZATION), "Request is invalid");
         String requestUrl = Objects.requireNonNull(request.getRequestURL()).toString();
         if (authorizationHeader.startsWith("Bearer ")) {
-            Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
+            Algorithm algorithm = Algorithm.HMAC512(jwtSecretKey.getBytes());
             JWTVerifier verifier = JWT.require(algorithm).build();
             String oldToken = authorizationHeader.substring("Bearer ".length());
             HashMap<String, String> tokens = new HashMap<>();
@@ -87,6 +90,7 @@ public class AuthController {
 
     /**
      * use for register new member
+     *
      * @param userRequestDto
      * @return
      */

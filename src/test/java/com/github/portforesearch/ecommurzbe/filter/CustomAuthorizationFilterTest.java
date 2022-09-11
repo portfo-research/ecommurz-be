@@ -11,7 +11,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AuthorizationServiceException;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
@@ -20,8 +19,10 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 class CustomAuthorizationFilterTest {
 
+    public static final String SECRET_KEY = "secretKey";
+
     @Test
-    void doFilterInternal_withAuthLoginServlet_thenGenerateToken() throws ServletException, IOException {
+    void doFilterInternal_withAuthLoginServlet_thenGenerateToken() throws IOException {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
         mockHttpServletRequest.setServletPath("/auth/login");
@@ -29,7 +30,7 @@ class CustomAuthorizationFilterTest {
         MockFilterChain mockFilterChain = new MockFilterChain();
 
         //WHEN
-        new CustomAuthorizationFilter().doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
+        new CustomAuthorizationFilter(SECRET_KEY).doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
                 mockFilterChain);
 
         //THEN
@@ -38,7 +39,7 @@ class CustomAuthorizationFilterTest {
     }
 
     @Test
-     void doFilterInternal_withAuthTokenRefreshServlet_thenGenerateToken() throws ServletException,
+     void doFilterInternal_withAuthTokenRefreshServlet_thenGenerateToken() throws
             IOException {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
@@ -48,7 +49,7 @@ class CustomAuthorizationFilterTest {
 
 
         //WHEN
-        new CustomAuthorizationFilter().doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
+        new CustomAuthorizationFilter(SECRET_KEY).doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
                 mockFilterChain);
 
         //THEN
@@ -57,8 +58,7 @@ class CustomAuthorizationFilterTest {
     }
 
     @Test
-     void doFilterInternal_WhenValidateToken_thenThrowAuthorizationServiceException() throws ServletException,
-            IOException {
+     void doFilterInternal_WhenValidateToken_thenThrowAuthorizationServiceException() {
         //GIVEN
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
         mockHttpServletRequest.setServletPath("/user/create");
@@ -68,7 +68,7 @@ class CustomAuthorizationFilterTest {
         MockFilterChain mockFilterChain = new MockFilterChain();
 
         //WHEN
-        CustomAuthorizationFilter customAuthorizationFilter = new CustomAuthorizationFilter();
+        CustomAuthorizationFilter customAuthorizationFilter = new CustomAuthorizationFilter(SECRET_KEY);
         AuthorizationServiceException authorizationServiceException = assertThrows(AuthorizationServiceException.class,
                 () -> customAuthorizationFilter.doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
                         mockFilterChain));
@@ -86,7 +86,7 @@ class CustomAuthorizationFilterTest {
         MockFilterChain mockFilterChain = new MockFilterChain();
 
         //WHEN
-        new CustomAuthorizationFilter().doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
+        new CustomAuthorizationFilter(SECRET_KEY).doFilterInternal(mockHttpServletRequest, mockHttpServletResponse,
                 mockFilterChain);
         //THEN
         assertNotNull(mockFilterChain.getRequest());
@@ -98,10 +98,9 @@ class CustomAuthorizationFilterTest {
         User user = new User();
         user.setUsername("username");
 
-        Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
+        Algorithm algorithm = Algorithm.HMAC512(SECRET_KEY.getBytes());
 
-        String token = Token.generate(algorithm, user.getUsername(),
+        return Token.generate(algorithm, user.getUsername(),
                 user.getRoles().stream().map(Role::getName).collect(Collectors.toList()), 60, "/api/test");
-        return token;
     }
 }
