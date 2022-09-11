@@ -1,0 +1,164 @@
+package com.github.portforesearch.ecommurzbe.module.auth.controller;
+
+
+import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.github.portforesearch.ecommurzbe.module.auth.generator.TokenGenerator;
+import com.github.portforesearch.ecommurzbe.module.user.dto.UserRequestDto;
+import com.github.portforesearch.ecommurzbe.module.user.dto.UserResponseDto;
+import com.github.portforesearch.ecommurzbe.module.role.model.Role;
+import com.github.portforesearch.ecommurzbe.module.user.model.User;
+import com.github.portforesearch.ecommurzbe.module.auth.service.RegisterService;
+import com.github.portforesearch.ecommurzbe.module.user.service.UserService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.util.NestedServletException;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.github.portforesearch.ecommurzbe.constant.RoleConstant.ROLE_CUSTOMER;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+
+@WebMvcTest(AuthController.class)
+class AuthControllerTest {
+    public static final String USERNAME = "userName";
+    public static final String PASSWORD = "passWord";
+    public static final String EMAIL = "email@email.com";
+    private final String TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9" +
+            ".eyJzdWIiOiJmYXNjYWwiLCJyb2xlcyI6WyJST0xFX0dFTkVSQUxfVVNFUiIsIlJPTEVfU1VQRVJfQURNSU4iXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvdG9rZW4vcmVmcmVzaCIsImV4cCI6MTY1NjY5NjEyNX0.GxtP-ygwdAH0ON3GUEyrm9Hn-6MG_qmjJbWnBDHAV4UFC2X6RPR39tCr7h27J5uhnMAUmn5X0QyLeLnQs68Mhw";
+
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private UserService userService;
+    @MockBean
+    private RegisterService registerService;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    @Autowired
+    private FilterChainProxy springSecurityFilterChain;
+
+    @BeforeEach()
+    void setup() {
+
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+
+    @Test
+    void refreshTokenWithBearer() throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/auth/token/refresh")
+                .servletPath("/auth/token/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION, "Bearer " + TOKEN);
+
+        User user = new User();
+        user.setUsername(USERNAME);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        ResultActions resultActions = mockMvc.perform(requestBuilder);
+
+        resultActions.andExpect(jsonPath("$.token", is(notNullValue())));
+        resultActions.andExpect(jsonPath("$.token", is(not(TOKEN))));
+    }
+
+    @Test
+    void refreshTokenWithoutBearer() {
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/auth/token/refresh")
+                .servletPath("/auth/token/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION, TOKEN);
+
+        User user = new User();
+        user.setUsername(USERNAME);
+        when(userService.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        NestedServletException exception = assertThrows(NestedServletException.class,
+                () -> mockMvc.perform(requestBuilder));
+
+        Assertions.assertTrue(exception.getMessage().contains("Refresh token is missing"));
+      }
+
+    @Test
+    void refreshTokenStillValid() throws Exception {
+
+        User user = new User();
+        user.setUsername(USERNAME);
+
+        Algorithm algorithm = Algorithm.HMAC512("secretKey".getBytes());
+
+        String refreshToken = TokenGenerator.generate(algorithm, user.getUsername(),
+                user.getRoles().stream().map(Role::getName).collect(Collectors.toList()), 60, "/api/test");
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/auth/token/refresh")
+                .servletPath("/auth/token/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(AUTHORIZATION, "Bearer " + refreshToken);
+
+        ResultActions resultActions = mockMvc.perform(requestBuilder);
+
+        resultActions.andExpect(jsonPath("$.token", is(refreshToken)));
+    }
+
+    @Test
+    void register_thenReturnSuccess() throws Exception {
+        User user = new User();
+        user.setUsername(USERNAME);
+
+        UserRequestDto userRequestDto = new UserRequestDto();
+        userRequestDto.setUsername(USERNAME);
+        userRequestDto.setPassword(PASSWORD);
+        userRequestDto.setEmail(EMAIL);
+        userRequestDto.setRole(Collections.singletonList(ROLE_CUSTOMER));
+
+        String message = String.format("User with username %s has been created with role %s",
+                user.getUsername(), userRequestDto.getRole().toString());
+
+        UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setMessage(message);
+        userResponseDto.setUsername(USERNAME);
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(userRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        when(registerService.register(any(UserRequestDto.class), any(User.class))).thenReturn(userResponseDto);
+
+        ResultActions resultActions = mockMvc.perform(requestBuilder);
+
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk());
+        resultActions.andExpect(MockMvcResultMatchers.content().json("{" +
+                "\"username\":" + userRequestDto.getUsername() +
+                ",\"message\":\"" + message +
+                "\"}"));
+    }
+}
