@@ -11,7 +11,10 @@ import org.mapstruct.factory.Mappers;
 public interface CartMapper {
     CartMapper INSTANCE = Mappers.getMapper(CartMapper.class);
     @Mapping(ignore = true, target = "product")
+    @Mapping(ignore = true, target = "itemAmount")
+    @Mapping(ignore = true, target = "totalAmount")
     CartResponseDto cartToCartDto(Cart cart);
+    @Mapping(ignore = true, target = "id")
     @Mapping(ignore = true, target = "createdBy")
     @Mapping(ignore = true, target = "createdDate")
     @Mapping(ignore = true, target = "updatedBy")
